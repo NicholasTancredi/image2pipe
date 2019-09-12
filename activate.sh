@@ -1,0 +1,2 @@
+CONDA_ENVIRONMENT_NAME=image2pipe
+source activate $CONDA_ENVIRONMENT_NAME
