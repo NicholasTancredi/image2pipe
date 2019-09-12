@@ -96,7 +96,7 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=False):
     """
     timer = None
     if use_timer:
-        timer = Timer()
+        timer = Timer(title='enqueue_frames_from_output')
     e = None
     frame_counter = itertools.count()
     img_size = scale[0] * scale[1] * 3
@@ -121,6 +121,9 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=False):
         # log.debug("%s bb size %d" % (e, len(bb)))
         if e >= 0 and len(bb) == 0:
             break
+
+    if use_timer:
+        timer.print()
 
     log.debug("bye ffmpeg %d" % e)
     if e == 0:
