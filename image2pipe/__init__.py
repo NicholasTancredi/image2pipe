@@ -126,7 +126,7 @@ def _emitt_image_output(_proc, _emitter, _scale):
 def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps: str = None,
                     scale: tuple = None,
                     buffer_size: tuple = None,
-                    pix_fmt: str = "bgr24", vf: list = None, use_timer=False):
+                    pix_fmt: str = "bgr24", vf: list = None, use_timer=None):
     """
 
     :param ss: start second in a format of time "00:00:00"

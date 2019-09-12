@@ -84,10 +84,11 @@ def images_from_url_subp(_fps,
         cmd.append(resize_mode)
     cmd.append("-")
     log.debug("popen %s" % " ".join(cmd))
+    print(' '.join(cmd))
     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL, bufsize=10 ** 8)
 
 
-def enqueue_frames_from_output(_proc, _qout, scale, use_timer=False):
+def enqueue_frames_from_output(_proc, _qout, scale, use_timer=None):
     """
 
     :type scale: tuple
@@ -96,7 +97,7 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=False):
     """
     timer = None
     if use_timer:
-        timer = Timer(title='enqueue_frames_from_output')
+        timer = use_timer
     e = None
     frame_counter = itertools.count()
     img_size = scale[0] * scale[1] * 3
@@ -110,7 +111,7 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=False):
                 ndarr = frombuffer(bb, dtype=numpy.uint8)
                 if use_timer: timer.toc('frombuffer')
                 if use_timer: timer.tic('buffer reshape')
-                ndarr = ndarr.reshape((scale[1], scale[0], 3))
+                ndarr = numpy.reshape(ndarr, (scale[1], scale[0], 3))
                 if use_timer: timer.toc('buffer reshape')
                 fn = next(frame_counter)
                 _qout.put((fn, ndarr))
