@@ -4,6 +4,7 @@ import itertools
 import logging
 import multiprocessing
 import subprocess
+from typing import Optional
 
 import numpy
 from numpy.ma import frombuffer
@@ -33,24 +34,36 @@ def bgr24_from_stdin_subp(_fps, _scale):
     return ffmpeg_p
 
 
-def images_from_url_subp(_fps, _scale, _url, ss=None, image_format='bgr24', vf: list = None):
+def images_from_url_subp(_fps,
+                         _scale,
+                         _url,
+                         ss: Optional[str] = None,
+                         to: Optional[str] = None,
+                         image_format: str = 'bgr24',
+                         vf: Optional[list] = None,
+                         resize_mode: str = 'fast_bilinear'):
     """
     Usage:
     p = images_from_url_subp(fps, scale, url)
     :type ss: str
 
-    :param vf: ffmpeg -vf filters 
+    :param vf: ffmpeg -vf filters
     :param image_format: str with ffmpeg's pix_fmt
     :param ss: "00:00:00"
-    :param _fps: 
-    :param _scale: 
-    :param _url: 
-    :return: 
+    :param to: "00:00:00"
+    :param _fps:
+    :param _scale:
+    :param _url:
+    :param resize_mode:
+    :return:
     """
     cmd = [FFMPEG_BIN, "-v", "error"]
     if ss:
         cmd.append("-ss")
         cmd.append(ss)
+    if to:
+        cmd.append("-to")
+        cmd.append(to)
     cmd += ["-i", _url, '-an', '-sn', "-f", "image2pipe", "-vcodec", "rawvideo", "-pix_fmt", image_format]
 
     if vf:
@@ -65,6 +78,9 @@ def images_from_url_subp(_fps, _scale, _url, ss=None, image_format='bgr24', vf: 
     if len(_vf) > 0:
         cmd.append("-vf")
         cmd.append(",".join(_vf))
+    if _scale:
+        cmd.append('-sws_flags')
+        cmd.append(resize_mode)
     cmd.append("-")
     log.debug("popen %s" % " ".join(cmd))
     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL, bufsize=10 ** 8)
