@@ -123,13 +123,16 @@ def _emitt_image_output(_proc, _emitter, _scale):
         _emitter.onError(sys.exc_info()[1])
 
 
-def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps: str = None, scale: tuple = None,
-                    pix_fmt: str = "bgr24", vf: list = None):
+def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps: str = None,
+                    scale: tuple = None,
+                    buffer_size: tuple = None,
+                    pix_fmt: str = "bgr24", vf: list = None, use_timer=False):
     """
 
     :param ss: start second in a format of time "00:00:00"
     :param pix_fmt: rawcodec image format bgr24 or rgb24
     :type scale: tuple (width, height)
+    :type buffer_size: tuple (width, height)
     :type fps: str
     :type video_url: str
     :type ss: str
@@ -140,11 +143,11 @@ def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps
 
     ffmpeg_p = ffmpeg.images_from_url_subp(fps, scale, video_url, ss, to=to, image_format=pix_fmt, vf=vf)
 
-    if scale is None:
+    if buffer_size is None:
         probe = ffprobe(video_url)
         vstream = first_video_stream(probe)
-        scale = (int(vstream['width']), int(vstream['height']))
-    reader_p = multiprocessing.Process(target=lambda: ffmpeg.enqueue_frames_from_output(ffmpeg_p, q, scale))
+        buffer_size = (int(vstream['width']), int(vstream['height']))
+    reader_p = multiprocessing.Process(target=lambda: ffmpeg.enqueue_frames_from_output(ffmpeg_p, q, buffer_size, use_timer=use_timer))
     reader_p.daemon = True
     return reader_p
 

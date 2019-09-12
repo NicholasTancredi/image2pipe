@@ -8,6 +8,7 @@ from typing import Optional
 
 import numpy
 from numpy.ma import frombuffer
+from image2pipe.Timer import Timer
 
 FFMPEG_BIN = "ffmpeg"
 log = logging.getLogger(__name__)
@@ -78,7 +79,7 @@ def images_from_url_subp(_fps,
     if len(_vf) > 0:
         cmd.append("-vf")
         cmd.append(",".join(_vf))
-    if _scale:
+    if resize_mode:
         cmd.append('-sws_flags')
         cmd.append(resize_mode)
     cmd.append("-")
@@ -86,21 +87,31 @@ def images_from_url_subp(_fps,
     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL, bufsize=10 ** 8)
 
 
-def enqueue_frames_from_output(_proc, _qout, scale):
+def enqueue_frames_from_output(_proc, _qout, scale, use_timer=False):
     """
 
     :type scale: tuple
     :type _proc: subprocess.Popen
     :type _qout: queues.Queue
     """
+    timer = None
+    if use_timer:
+        timer = Timer()
     e = None
     frame_counter = itertools.count()
+    img_size = scale[0] * scale[1] * 3
     while multiprocessing.current_process().is_alive():
-        img_size = scale[0] * scale[1] * 3
+        if use_timer: timer.tic('_proc.stdout.read')
         bb = _proc.stdout.read(img_size)
+        if use_timer: timer.toc('_proc.stdout.read')
         if len(bb) > 0:
             try:
-                ndarr = frombuffer(bb, dtype=numpy.uint8).reshape((scale[1], scale[0], 3))
+                if use_timer: timer.tic('frombuffer')
+                ndarr = frombuffer(bb, dtype=numpy.uint8)
+                if use_timer: timer.toc('frombuffer')
+                if use_timer: timer.tic('buffer reshape')
+                ndarr = ndarr.reshape((scale[1], scale[0], 3))
+                if use_timer: timer.toc('buffer reshape')
                 fn = next(frame_counter)
                 _qout.put((fn, ndarr))
             except Exception as err:

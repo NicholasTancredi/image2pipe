@@ -3,3 +3,4 @@ greenlet==0.4.15
 opencv-python==4.1.0.25
 websocket==0.2.1
 numpy==1.17.2
+prettytable==0.7.2
