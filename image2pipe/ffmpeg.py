@@ -88,7 +88,7 @@ def images_from_url_subp(_fps,
     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL, bufsize=10 ** 8)
 
 
-def enqueue_frames_from_output(_proc, _qout, scale, use_timer=None):
+def enqueue_frames_from_output(_proc, _qout, scale, use_timer=None, use_tensorflow: bool = False):
     """
 
     :type scale: tuple
@@ -107,14 +107,34 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=None):
         if use_timer: timer.toc('_proc.stdout.read')
         if len(bb) > 0:
             try:
-                if use_timer: timer.tic('frombuffer')
-                ndarr = frombuffer(bb, dtype=numpy.uint8)
-                if use_timer: timer.toc('frombuffer')
-                if use_timer: timer.tic('buffer reshape')
-                ndarr = numpy.reshape(ndarr, (scale[1], scale[0], 3))
-                if use_timer: timer.toc('buffer reshape')
-                fn = next(frame_counter)
-                _qout.put((fn, ndarr))
+                if use_tensorflow:
+                    import tensorflow as tf
+                    if use_timer: timer.tic('tf.io.decode_raw')
+                    decode_raw = tf.io.decode_raw(bb, out_type=tf.uint8)
+                    if use_timer: timer.toc('tf.io.decode_raw')
+                    if use_timer: timer.tic('tf.reshape')
+                    reshaped = tf.reshape(
+                        decode_raw,
+                        (scale[1], scale[0], 3)
+                    )
+                    if use_timer: timer.toc('tf.reshape')
+                    if use_timer: timer.tic('image dtype')
+                    reshaped = tf.image.convert_image_dtype(reshaped, dtype=tf.float32)
+                    if use_timer: timer.toc('image dtype')
+                    if use_timer: timer.tic('tf to numpy')
+                    tensor = reshaped.numpy()
+                    if use_timer: timer.toc('tf to numpy')
+                    fn = next(frame_counter)
+                    _qout.put((fn, tensor))
+                else:
+                    if use_timer: timer.tic('frombuffer')
+                    ndarr = frombuffer(bb, dtype=numpy.uint8)
+                    if use_timer: timer.toc('frombuffer')
+                    if use_timer: timer.tic('buffer reshape')
+                    ndarr = numpy.reshape(ndarr, (scale[1], scale[0], 3))
+                    if use_timer: timer.toc('buffer reshape')
+                    fn = next(frame_counter)
+                    _qout.put((fn, ndarr))
             except Exception as err:
                 log.error("%s" % err)
 

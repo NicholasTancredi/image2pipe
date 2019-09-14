@@ -126,7 +126,8 @@ def _emitt_image_output(_proc, _emitter, _scale):
 def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps: str = None,
                     scale: tuple = None,
                     buffer_size: tuple = None,
-                    pix_fmt: str = "bgr24", vf: list = None, use_timer=None):
+                    pix_fmt: str = "bgr24", vf: list = None, use_timer=None,
+                    use_tensorflow: bool = False):
     """
 
     :param ss: start second in a format of time "00:00:00"
@@ -147,7 +148,7 @@ def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps
         probe = ffprobe(video_url)
         vstream = first_video_stream(probe)
         buffer_size = (int(vstream['width']), int(vstream['height']))
-    reader_p = multiprocessing.Process(target=lambda: ffmpeg.enqueue_frames_from_output(ffmpeg_p, q, buffer_size, use_timer=use_timer))
+    reader_p = multiprocessing.Process(target=lambda: ffmpeg.enqueue_frames_from_output(ffmpeg_p, q, buffer_size, use_timer=use_timer, use_tensorflow=use_tensorflow))
     reader_p.daemon = True
     return reader_p
 
