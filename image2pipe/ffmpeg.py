@@ -95,6 +95,7 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=None, use_tensorfl
     :type _proc: subprocess.Popen
     :type _qout: queues.Queue
     """
+    print('scale enqueue_frames_from_output', scale)
     timer = None
     if use_timer:
         timer = use_timer
@@ -145,6 +146,39 @@ def enqueue_frames_from_output(_proc, _qout, scale, use_timer=None, use_tensorfl
 
     if use_timer:
         timer.print()
+
+    log.debug("bye ffmpeg %d" % e)
+    if e == 0:
+        _qout.put(None)
+        _qout.close()
+    elif e > 0:
+        _qout.put(None)
+        _qout.close()
+        raise RuntimeError("ffmpeg exits with code %d" % e)
+
+
+def enqueue_frames_from_output_buffer(_proc, _qout, scale):
+    """
+
+    :type scale: tuple
+    :type _proc: subprocess.Popen
+    :type _qout: queues.Queue
+    """
+    e = None
+    frame_counter = itertools.count()
+    img_size = scale[0] * scale[1] * 3
+    while multiprocessing.current_process().is_alive():
+        bb = _proc.stdout.read(img_size)
+        if len(bb) > 0:
+            try:
+                fn = next(frame_counter)
+                _qout.put((fn, bb))
+            except Exception as err:
+                log.error("%s" % err)
+
+        e = _proc.poll()
+        if e >= 0 and len(bb) == 0:
+            break
 
     log.debug("bye ffmpeg %d" % e)
     if e == 0:

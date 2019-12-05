@@ -148,6 +148,7 @@ def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps
         probe = ffprobe(video_url)
         vstream = first_video_stream(probe)
         buffer_size = (int(vstream['width']), int(vstream['height']))
+    print('buffer_size', buffer_size)
     reader_p = multiprocessing.Process(target=lambda: ffmpeg.enqueue_frames_from_output(ffmpeg_p, q, buffer_size, use_timer=use_timer, use_tensorflow=use_tensorflow))
     reader_p.daemon = True
     return reader_p
