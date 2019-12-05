@@ -104,6 +104,8 @@ class FastVideoReader:
             return Frame(index, frame)
 
 
-def get_single_frame(filename: str, index: int, min_size: Optional[int] = None) -> Frame:
-    return FastVideoReader(filename=filename, frame_range=(index, index+1), min_size=min_size).get_single_frame()
+def get_single_frame(filename: str, index: int, min_size: Optional[int] = None,
+                     video_info: Optional[VideoInfo] = None) -> Frame:
+    return FastVideoReader(filename=filename, frame_range=(index, index+1), min_size=min_size,
+                           video_info=video_info).get_single_frame()
 
