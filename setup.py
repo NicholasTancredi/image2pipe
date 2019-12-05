@@ -5,9 +5,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name='image2pipe',
-    version='0.1.10',
-    author='Anton P. Linevich',
-    author_email='anton@linevich.com',
+    version='0.1.11',
+    author='Anton P. Linevich + Nicholas Tancredi',
     keywords="ffmpeg yuv image2pipe",
     packages=['image2pipe', ],
     scripts=[],
