@@ -13,13 +13,20 @@ class Frame(NamedTuple):
     image: np.ndarray
 
 
+class VideoInfo(NamedTuple):
+    frame_count: int
+    width: int
+    height: int
+    fps: float
+
+
 class FastVideoReader:
     queue: Queue
 
     frame_count: int
     width: int
     height: int
-    fps: Fraction
+    fps: float
 
     _frame_index_start: int
     _frame_index_end: int
@@ -28,16 +35,24 @@ class FastVideoReader:
                  filename: str,
                  frame_range: Optional[Tuple[int, int]] = None,
                  process_nth_frames: Optional[int] = None,
-                 min_size: Optional[int] = None):
-        info = ffprobe(filename)['streams'][0]
-        frame_count = int(info['nb_frames'])
-        self.frame_count = frame_count
-        width = int(info['width'])
-        height = int(info['height'])
-        self.width = width
-        self.height = height
-        fps = Fraction(info['avg_frame_rate'])
-        self.fps = fps
+                 min_size: Optional[int] = None,
+                 video_info: Optional[VideoInfo] = None):
+        if video_info is not None:
+            frame_count, width, height, fps = video_info
+            self.frame_count = frame_count
+            self.width = width
+            self.height = height
+            self.fps = fps
+        else:
+            info = ffprobe(filename)['streams'][0]
+            frame_count = int(info['nb_frames'])
+            self.frame_count = frame_count
+            width = int(info['width'])
+            height = int(info['height'])
+            self.width = width
+            self.height = height
+            fps = Fraction(info['avg_frame_rate'])
+            self.fps = float(fps)
 
         self.queue = Queue()
         if frame_range is not None:
@@ -92,18 +107,3 @@ class FastVideoReader:
 def get_single_frame(filename: str, index: int, min_size: Optional[int] = None) -> Frame:
     return FastVideoReader(filename=filename, frame_range=(index, index+1), min_size=min_size).get_single_frame()
 
-
-def main():
-    filename = '/Users/nicholastancredi/Code/app-engine-fusionetics-curv-pose/.data/fsscurvflight/0d75-a951/2-Leg-Squat-Side-video.mp4'
-    single_frame = get_single_frame(filename=filename, index=10,  min_size=336)
-    print(single_frame.index)
-    print(single_frame.image.shape)
-    import cv2
-
-    cv2.imshow('image', single_frame.image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
-if __name__ == '__main__':
-    main()
