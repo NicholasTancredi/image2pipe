@@ -142,7 +142,7 @@ def images_from_url(q: Queue, video_url: str, ss: str = "00:00:00", to=None, fps
     :type q: queues.Queue
     """
 
-    ffmpeg_p = ffmpeg.images_from_url_subp(fps, scale, video_url, ss, to=to, image_format=pix_fmt, vf=vf)
+    ffmpeg_p = ffmpeg.images_from_url_subp(fps, scale, video_url, ss, image_format=pix_fmt, vf=vf)
 
     if buffer_size is None:
         probe = ffprobe(video_url)

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='image2pipe-nicholas-tancredi',
-    version='0.2.1',
+    version='0.2.2',
     author='Nicholas Tancredi',
     keywords="ffmpeg yuv image2pipe",
     packages=['image2pipe', ],

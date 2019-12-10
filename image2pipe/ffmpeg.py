@@ -62,9 +62,6 @@ def images_from_url_subp(_fps,
     if ss:
         cmd.append("-ss")
         cmd.append(ss)
-    if to:
-        cmd.append("-to")
-        cmd.append(to)
     cmd += ["-i", _url, '-an', '-sn', "-f", "image2pipe", "-vcodec", "rawvideo", "-pix_fmt", image_format]
 
     if vf:
