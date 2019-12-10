@@ -103,9 +103,30 @@ class FastVideoReader:
             index = i + self._frame_index_start
             return Frame(index, frame)
 
+    def get_array(self) -> np.ndarray:
+        collection = []
+        for (i, frame) in yield_from_queue(self.queue):
+            index = i + self._frame_index_start
+            if index == self._frame_index_end:
+                break
+            collection.append(frame)
+        return np.array(collection)
+
 
 def get_single_frame(filename: str, index: int, min_size: Optional[int] = None,
                      video_info: Optional[VideoInfo] = None) -> Frame:
     return FastVideoReader(filename=filename, frame_range=(index, index+1), min_size=min_size,
                            video_info=video_info).get_single_frame()
+
+
+def main():
+    filename = '/Users/nicholastancredi/Code/app-engine-fusionetics-curv-pose/.data/fsscurvflight/0d75-a951/2-Leg-Squat-Side-video.mp4'
+    index = 10
+    min_size = 336
+    frames = FastVideoReader(filename=filename, frame_range=(index, index+2), min_size=min_size).get_array()
+    print(frames, frames.shape, frames.dtype)
+
+
+if __name__ == '__main__':
+    main()
 
