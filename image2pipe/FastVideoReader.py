@@ -72,7 +72,7 @@ class FastVideoReader:
             frame_index_end = frame_count
 
         ss = str(float(frame_index_start / fps))
-        to = str(float(frame_index_end / fps))
+        # to = str(float(frame_index_end / fps))
 
         self._frame_index_end = frame_index_end
         self._frame_index_start = frame_index_start
@@ -87,7 +87,7 @@ class FastVideoReader:
                 scale = (int(round(width / (height / min_size))), min_size)
         else:
             scale = (width, height)
-        decoder = image2pipe.images_from_url(self.queue, filename, ss=ss, to=to, fps=fps, scale=scale, buffer_size=scale)
+        decoder = image2pipe.images_from_url(self.queue, filename, ss=ss, fps=fps, scale=scale, buffer_size=scale)
         decoder.start()
 
     def get_next_frame(self) -> Frame:
